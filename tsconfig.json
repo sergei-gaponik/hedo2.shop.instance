@@ -13,6 +13,6 @@
     },
     "sourceMap": true
   },
-  "include": [ "src/*", "src/api/products.ts", "src/core/routes.ts", "src/core/handler.ts", "src/core/const.ts" ],
+  "include": [ "src/*" ],
   "exclude": [ "node_modules", "**/*.spec.ts", "build" ]
 }

@@ -3,7 +3,7 @@ require("reflect-metadata")
 require("dotenv").config()
 
 import 'isomorphic-fetch'
-import { bold, green, cyan, yellow } from 'colors/safe'
+import { bold, cyan, yellow } from 'colors/safe'
 import * as fs from 'fs'
 import * as path from 'path'
 import { MongoClient } from 'mongodb'
@@ -11,12 +11,13 @@ import * as urql from 'urql/core'
 import Fastify from 'fastify'
 import fastifyCors from 'fastify-cors'
 import handler from './core/handler'
+import systemHandler from './core/systemHandler'
 import { VERSION, PRODUCTION } from './core/const'
 import { setContext } from './core/context'
 
 async function main() {
 
-  console.log(`${bold(green('SHOP INSTANCE API'))} v${VERSION}\n`);
+  console.log(`${bold('INSTANCE API')} v${VERSION}\n`);
   console.log(`env: ${PRODUCTION ? bold(cyan("PRODUCTION")) : bold(yellow("DEVELOPMENT"))}`);
 
   const { PORT, HOST, MONGODB_INSTANCE, SYSTEM_API_ENDPOINT } = process.env;
@@ -33,10 +34,12 @@ async function main() {
 
   console.log('initializing graphql client');
 
-  const urqlClient = urql.createClient({ url: SYSTEM_API_ENDPOINT });
+  const urqlClient = urql.createClient({ 
+    url: SYSTEM_API_ENDPOINT, 
+    requestPolicy: "network-only"
+  });
   
   setContext({ urqlClient, mongoDB })
-
 
   console.log('initializing server...');
 
@@ -49,10 +52,13 @@ async function main() {
 
   app.register(fastifyCors)
   app.post('/api', (req, res) => handler(req, res));
+  app.post('/system', (req, res) => systemHandler(req, res));
+
 
   app.listen(PORT, () => {
-    console.log(`\napp running on ${cyan(`${HOST}:${PORT}`)}`);
-    console.log(`api endpoint ${cyan(`${HOST}:${PORT}/api`)}\n`);
+    console.log(`\napp running on ${cyan(`https://${HOST}:${PORT}`)}`);
+    console.log(`api endpoint ${cyan(`https://${HOST}:${PORT}/api`)}`);
+    console.log(`system endpoint ${cyan(`https://${HOST}:${PORT}/system`)}\n`);
   })
 
 }

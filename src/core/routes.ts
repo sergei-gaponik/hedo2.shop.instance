@@ -1,27 +1,9 @@
-import { updateAllProducts } from '../api/updateProducts'
-import { InstanceResponse } from '../types';
+import * as _products from '../api/products'
+import * as _filters from '../api/filters'
 
-async function getProducts() {
-  
+const routes = {
+  ..._products,
+  ..._filters
 }
 
-async function updateProducts(args) {
-
-  const { filter } = args;
-  let res: InstanceResponse;
-
-  if (filter) {
-    
-  }
-  else {
-    res = await updateAllProducts()
-  }
-
-  return res;
-}
-
-
-export default {
-  getProducts,
-  updateProducts
-}
+export default routes
