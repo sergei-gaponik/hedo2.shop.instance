@@ -2,7 +2,6 @@ import * as urql from "@urql/core"
 import { Db } from "mongodb"
 
 export interface Context {
-  urqlClient?: urql.Client,
   mongoDB?: Db,
 }
 

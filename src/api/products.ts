@@ -1,30 +1,23 @@
 import { context } from '../core/context'
 import { InstanceRequestError, InstanceResponse } from '../types';
+import { isValidStringArray, isValidProjection } from '@sergei-gaponik/hedo2.lib.util'
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-const isValidIdArray = ids => (!!ids && Array.isArray(ids) || ids.every(id => typeof(id) == "string"))
-
-const isValidProjection = p => (p == null || Object.values(p).every((v => typeof(v) == "number")))
-
-async function findProducts(args): Promise<InstanceResponse> {
+export async function findProducts(args): Promise<InstanceResponse> {
 
   const ids = args.ids
-  const projection = args.projection || null
+  const { limit = 24, page = 1 } = args
 
-  if (!isValidIdArray(ids) || !isValidProjection(projection))
+  if (!isValidStringArray(ids) || isNaN(page) || isNaN(limit))
     return { errors: [ InstanceRequestError.badRequest ] }
 
   if(!ids.length)
     return { data: { products: [] }}
 
-  const products = !!projection 
-    ? await context().mongoDB.collection('products').find({
-        _id: { $in: ids }
-      }, { projection }).toArray()
-    : await context().mongoDB.collection('products').find({
-        _id: { $in: ids }
-      }).toArray()
+  const skip = limit * (page - 1)
+
+  let products = await context().mongoDB.collection('products').find({ _id: { $in: ids }}).limit(limit).skip(skip).toArray()
+
+  products = products.sort((a, b) => ids.indexOf(a._id) - ids.indexOf(b._id))
 
   return {
     data: {
@@ -33,33 +26,23 @@ async function findProducts(args): Promise<InstanceResponse> {
   }
 }
 
-async function findOneProduct(args): Promise<InstanceResponse> {
+export async function findOneProduct(args): Promise<InstanceResponse> {
 
   const query = args.query
-  const projection = args.projection || null
 
-  if (!query || typeof(query) != "string" || !isValidProjection(projection))
+  if (!query || typeof(query) != "string")
     return { errors: [ InstanceRequestError.badRequest ] }
 
-  const q = {
+  const product = await context().mongoDB.collection('products').findOne({
     $or: [
       { _id: query },
       { handle: query }
     ]
-  }
-
-  const product = !!projection 
-    ? await context().mongoDB.collection('products').findOne(q, { projection })
-    : await context().mongoDB.collection('products').findOne(q)
+  })
 
   return {
     data: {
       product
     }
   }
-}
-
-export {
-  findProducts,
-  findOneProduct
 }

@@ -1,6 +1,6 @@
 {
   "name": "hedo2.shop.instance",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "src/app.ts",
   "scripts": {
@@ -19,13 +19,18 @@
     "module-alias": "^2.2.2"
   },
   "dependencies": {
+    "@types/jsonwebtoken": "^8.5.5",
     "@types/mongodb": "^3.6.18",
+    "@types/node-fetch": "^2.5.12",
     "colors": "^1.4.0",
     "dotenv": "^10.0.0",
     "fastify": "^3.17.0",
+    "fastify-compress": "^3.6.0",
     "fastify-cors": "^6.0.1",
     "isomorphic-fetch": "^3.0.0",
+    "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.8",
+    "node-fetch": "^2.6.1",
     "reflect-metadata": "^0.1.13",
     "urql": "^2.0.3"
   }

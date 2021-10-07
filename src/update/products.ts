@@ -1,36 +1,6 @@
 import { context } from '../core/context'
 import { InstanceResponse } from '../types'
-
-
-const queryAll = async (gql: string, limit: number, dataKey: string) => {
-
-  let page = 1
-  let data = []
-
-  while (true) {
-
-    let gqlResponse = null;
-
-    const queryArgs = { page, limit }
-
-    gqlResponse = await context().urqlClient.query(gql, queryArgs).toPromise()
-
-    if (gqlResponse.error || !gqlResponse.data) {
-      console.log(gqlResponse)
-      throw new Error()
-    }
-
-    const _data = gqlResponse.data[dataKey]
-
-    data = data.concat(_data)
-
-    if (_data.length < limit) break;
-
-    page++
-  }
-
-  return data;
-}
+import { queryAll } from '@sergei-gaponik/hedo2.lib.util'
 
 
 async function updateAllProducts(): Promise<InstanceResponse>  {
@@ -54,13 +24,13 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
         variants {
           _id
           title
+          overwriteTitle
+          measurementUnit
+          measurementQuantity
+          measurementReferenceValue
           price
-          items {
-            inventoryItem {
-              ean
-            }
-          }
           availableQuantity
+          maxQuantity
         }
         properties {
           property {
@@ -75,7 +45,7 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
     }
   `
 
-  const products = await queryAll(gql, 200, 'products');
+  const products = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'products');
 
   await context().mongoDB.collection('products').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('products').insertMany(products)
@@ -91,7 +61,48 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
 
 }
 
+async function updateAllVariants(): Promise<InstanceResponse>  {
+
+  const gql = `
+    query GetVariants($limit: Float!, $page: Float!) {
+      variants (dereference: true, limit: $limit, page: $page) {
+        _id
+        title
+        overwriteTitle
+        measurementUnit
+        measurementQuantity
+        measurementReferenceValue
+        price
+        availableQuantity
+        maxQuantity
+        images {
+          src
+        }
+        products {
+          _id
+        }
+      }
+    }
+  `
+
+  const variants = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'variants');
+
+  await context().mongoDB.collection('variants').deleteMany({})
+  const { insertedCount } = await context().mongoDB.collection('variants').insertMany(variants)
+
+  if(insertedCount != variants.length)
+    throw new Error();
+  
+  return {
+    data: {
+      insertedCount
+    }
+  }
+
+}
+
 
 export {
-  updateAllProducts
+  updateAllProducts,
+  updateAllVariants
 }

@@ -1,86 +1,34 @@
 import { context } from '../core/context'
 import { InstanceResponse } from '../types'
+import { queryAll } from '@sergei-gaponik/hedo2.lib.util'
 
 
-const queryAll = async (gql: string, limit: number, dataKey: string) => {
-
-  let page = 1
-  let data = []
-
-  while (true) {
-
-    let gqlResponse = null;
-
-    const queryArgs = { page, limit }
-
-    gqlResponse = await context().urqlClient.query(gql, queryArgs).toPromise()
-
-    if (gqlResponse.error || !gqlResponse.data) {
-      console.log(gqlResponse)
-      throw new Error()
-    }
-
-    const _data = gqlResponse.data[dataKey]
-
-    data = data.concat(_data)
-
-    if (_data.length < limit) break;
-
-    page++
-  }
-
-  return data;
-}
-
-
-async function updateAllProducts(): Promise<InstanceResponse>  {
+export async function updateAllFilters(): Promise<InstanceResponse>  {
 
   const gql = `
-    query GetProductsForInstanceAPI($limit: Float!, $page: Float!) {
-      products (dereference: true, limit: $limit, page: $page) {
+    query GetProductProperties($limit: Float!, $page: Float!) {
+      productProperties(dereference: true, limit: $limit, page: $page) {
         _id
-        name
-        series {
+        category {
           _id
           name
-          handle
-        }
-        brand {
-          _id
-          name
-          handle
         }
         handle
-        variants {
-          _id
-          title
-          price
-          items {
-            inventoryItem {
-              ean
-            }
-          }
-          availableQuantity
-        }
-        properties {
-          property {
-            _id
-          }
-          value
-        }
-        images {
-          src
-        }
+        name
+        dataType
+        title
       }
     }
   `
 
-  const products = await queryAll(gql, 200, 'products');
+  const productProperties = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'productProperties');
 
-  await context().mongoDB.collection('products').deleteMany({})
-  const { insertedCount } = await context().mongoDB.collection('products').insertMany(products)
+  const filters = productProperties.filter(a => a.dataType == "boolean")
 
-  if(insertedCount != products.length)
+  await context().mongoDB.collection('filters').deleteMany({})
+  const { insertedCount } = await context().mongoDB.collection('filters').insertMany(filters)
+
+  if(insertedCount != filters.length)
     throw new Error();
   
   return {
@@ -89,9 +37,4 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
     }
   }
 
-}
-
-
-export {
-  updateAllProducts
 }
