@@ -5,7 +5,8 @@ import * as _cart from '../api/cart'
 import * as _categories from '../api/categories'
 import * as _blog from '../api/blog'
 import * as _variants from '../api/variants'
-import * as _user from '../api/user'
+import * as _userAddress from '../api/userAddress'
+import * as _shippingMethods from '../api/shippingMethods'
 
 const routes = {
   ..._products,
@@ -15,7 +16,8 @@ const routes = {
   ..._categories,
   ..._blog,
   ..._variants,
-  ..._user
+  ..._userAddress,
+  ..._shippingMethods
 }
 
 export default routes

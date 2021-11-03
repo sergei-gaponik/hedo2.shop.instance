@@ -17,6 +17,15 @@ export async function findProducts(args): Promise<InstanceResponse> {
 
   let products = await context().mongoDB.collection('products').find({ _id: { $in: ids }}).limit(limit).skip(skip).toArray()
 
+  const variantIds = [ ...new Set(products.flatMap(a => a.variants.map(b => b._id))) ]
+  const variants = await context().mongoDB.collection('variants').find({ _id: { $in: variantIds }}).toArray()
+
+  products = products.map(product => ({
+    ...product,
+    variants: product.variants.map(variant => variants.find(a => a._id == variant._id))
+  }))
+
+
   products = products.sort((a, b) => ids.indexOf(a._id) - ids.indexOf(b._id))
 
   return {
@@ -33,12 +42,17 @@ export async function findOneProduct(args): Promise<InstanceResponse> {
   if (!query || typeof(query) != "string")
     return { errors: [ InstanceRequestError.badRequest ] }
 
-  const product = await context().mongoDB.collection('products').findOne({
+  let product = await context().mongoDB.collection('products').findOne({
     $or: [
       { _id: query },
       { handle: query }
     ]
   })
+
+  const variantIds = product.variants.map(b => b._id)
+  const variants = await context().mongoDB.collection('variants').find({ _id: { $in: variantIds }}).toArray()
+
+  product.variants = product.variants.map(variant => variants.find(a => a._id == variant._id))
 
   return {
     data: {

@@ -23,14 +23,6 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
         handle
         variants {
           _id
-          title
-          overwriteTitle
-          measurementUnit
-          measurementQuantity
-          measurementReferenceValue
-          price
-          availableQuantity
-          maxQuantity
         }
         properties {
           property {
