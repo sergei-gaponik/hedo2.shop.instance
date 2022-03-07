@@ -21,7 +21,7 @@ export async function updateAllFilters(): Promise<InstanceResponse>  {
     }
   `
 
-  const productProperties = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'productProperties');
+  const productProperties = await queryAll(gql, 200, 'productProperties');
 
   const filters = productProperties.filter(a => a.dataType == "boolean")
 

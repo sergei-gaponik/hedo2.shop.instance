@@ -1,6 +1,6 @@
 {
   "name": "hedo2.shop.instance",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "",
   "main": "src/app.ts",
   "scripts": {
@@ -19,6 +19,7 @@
     "module-alias": "^2.2.2"
   },
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "@types/jsonwebtoken": "^8.5.5",
     "@types/mongodb": "^3.6.18",
     "@types/node-fetch": "^2.5.12",
@@ -32,6 +33,7 @@
     "mongodb": "^3.6.8",
     "node-fetch": "^2.6.1",
     "reflect-metadata": "^0.1.13",
-    "urql": "^2.0.3"
+    "stripe": "^8.186.1",
+    "uuid": "^8.3.2"
   }
 }

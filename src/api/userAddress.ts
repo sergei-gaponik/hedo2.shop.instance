@@ -32,7 +32,6 @@ const _getUserAddresses = async (user): Promise<InstanceResponse> => {
   `
 
   const r = await gqlHandler({
-    endpoint: process.env.SYSTEM_API_ENDPOINT,
     query: getUserAddresses,
     variables: { username: user.sub }
   })
@@ -60,7 +59,6 @@ const _updateUserAddresses = async (username, addresses): Promise<InstanceRespon
     `
   
   const r2 = await gqlHandler({
-    endpoint: process.env.SYSTEM_API_ENDPOINT,
     query: updateUserAddresses,
     variables: { username, addresses }
   })

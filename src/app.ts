@@ -11,6 +11,7 @@ import handler from './core/handler'
 import systemHandler from './core/systemHandler'
 import { VERSION, PRODUCTION } from './core/const'
 import { setContext } from './core/context'
+import * as paypal from "@paypal/checkout-server-sdk"
 
 async function main() {
 
@@ -18,7 +19,7 @@ async function main() {
   console.log(`${bold('INSTANCE API')} v${VERSION}\n`);
   console.log(`env: ${PRODUCTION ? bold(cyan("PRODUCTION")) : bold(yellow("DEVELOPMENT"))}`);
 
-  const { PORT, HOST, MONGODB_INSTANCE, SYSTEM_API_ENDPOINT } = process.env;
+  const { PORT, HOST, MONGODB_INSTANCE } = process.env;
   
   console.log('connecting to mongo db...');
 
@@ -30,9 +31,21 @@ async function main() {
   const mongoDB = await MongoClient.connect(MONGODB_INSTANCE, mongoOptions)
     .then(client => client.db());
 
-  console.log('initializing graphql client');
+  console.log('initializing paypal client...');
 
-  setContext({ mongoDB })
+  const Environment =
+    PRODUCTION
+      ? paypal.core.LiveEnvironment
+      : paypal.core.SandboxEnvironment
+  const paypalClient = new paypal.core.PayPalHttpClient(
+    new Environment(
+      process.env.PAYPAL_CLIENT_ID,
+      process.env.PAYPAL_CLIENT_SECRET
+    )
+  )
+
+
+  setContext({ mongoDB, paypalClient })
 
   console.log('initializing server...');
 

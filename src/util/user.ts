@@ -11,7 +11,6 @@ export async function createUser(user) {
   `
 
   const r2 = await gqlHandler({
-    endpoint: process.env.SYSTEM_API_ENDPOINT,
     query: createUser,
     variables: { 
       input: {

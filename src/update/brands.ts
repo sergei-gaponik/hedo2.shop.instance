@@ -19,7 +19,7 @@ async function updateAllBrands(): Promise<InstanceResponse>  {
     }
   `
 
-  const brands = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'brands');
+  const brands = await queryAll(gql, 200, 'brands');
 
   await context().mongoDB.collection('brands').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('brands').insertMany(brands)
@@ -56,7 +56,7 @@ async function updateAllSeries(): Promise<InstanceResponse>  {
     }
   `
 
-  const series = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'series');
+  const series = await queryAll(gql, 200, 'series');
 
   await context().mongoDB.collection('series').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('series').insertMany(series)

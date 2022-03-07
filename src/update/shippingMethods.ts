@@ -18,7 +18,7 @@ export async function updateAllShippingMethods(): Promise<InstanceResponse>  {
     }
   `
 
-  const items = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'shippingMethods');
+  const items = await queryAll(gql, 200, 'shippingMethods');
 
   await context().mongoDB.collection('shippingmethods').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('shippingmethods').insertMany(items)

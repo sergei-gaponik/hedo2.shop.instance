@@ -22,7 +22,7 @@ const _handler = async (body: InstanceRequest): Promise<InstanceResponse> => {
 
 export default async function handler(req: FastifyRequest, reply: FastifyReply) {
 
-  await sleep(200)
+  //await sleep(200)
   
   const _r = await (async (): Promise<InstanceResponse> => {
     
@@ -32,10 +32,21 @@ export default async function handler(req: FastifyRequest, reply: FastifyReply) 
     const body: InstanceRequest = req.body;
 
     if(body.bulk){
-      
-      const r = await Promise.all(body.bulk.map(req => _handler(req)))
+
+      let r = []
+
+      if(body.chronological){
+        for(const task of body.bulk){
+          const _r = await _handler(task)
+          r.push(_r)
+        }
+      }
+      else{
+        r = await Promise.all(body.bulk.map(req => _handler(req)))
+      }
 
       return { bulk: r }
+      
     }
     
     return _handler(body)

@@ -37,7 +37,7 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
     }
   `
 
-  const products = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'products');
+  const products = await queryAll(gql, 200, 'products');
 
   await context().mongoDB.collection('products').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('products').insertMany(products)
@@ -65,6 +65,7 @@ async function updateAllVariants(): Promise<InstanceResponse>  {
         measurementQuantity
         measurementReferenceValue
         price
+        specialTaxRate
         availableQuantity
         maxQuantity
         images {
@@ -77,7 +78,7 @@ async function updateAllVariants(): Promise<InstanceResponse>  {
     }
   `
 
-  const variants = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'variants');
+  const variants = await queryAll(gql, 200, 'variants');
 
   await context().mongoDB.collection('variants').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('variants').insertMany(variants)

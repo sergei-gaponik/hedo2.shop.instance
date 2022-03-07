@@ -1,3 +1,5 @@
+import { PaymentMethod, Address, ShippingMethod, LineItemInput, PaymentProvider } from '@sergei-gaponik/hedo2.lib.models'
+
 export enum InstanceRequestError {
   "pathNotFound" = "pathNotFound",
   "missingArgs" = "missingArgs",
@@ -6,7 +8,8 @@ export enum InstanceRequestError {
   "badRequest" = "badRequest",
   "notFound" = "notFound",
   "wrongContentType" = "wrongContentType",
-  "quantityNotAvailable" = "quantityNotAvailable"
+  "quantityNotAvailable" = "quantityNotAvailable",
+  "duplicateRequest" = "duplicateRequest"
 }
 
 export interface InstanceRequest {
@@ -14,6 +17,7 @@ export interface InstanceRequest {
   args?: any
   idToken?: string
   bulk?: InstanceRequest[]
+  chronological?: boolean
 }
 
 export interface InstanceResponse {
@@ -39,4 +43,32 @@ export interface UserToken {
   family_name: string,
   jti: string,
   email: string
+}
+
+export interface PaymentSession {
+  id: string
+  uuid?: string
+  hppSession?: string
+  paymentProvider: PaymentProvider
+  redirect?: string
+}
+
+export interface InitCheckoutSessionArgs {
+  uuid: string,
+  shippingInfo: {
+    shippingAddress: Address,
+    billingAddress?: Address,
+    shippingMethod?: ShippingMethod,
+    billingAddressMatchesShippingAddress: boolean
+  },
+  contactInfo: {
+    privacyPolicyAccepted?: boolean,
+    email: string,
+    isAuthenticated?: boolean,
+    username?: string
+  },
+  paymentInfo: {
+    paymentMethod: PaymentMethod
+  },
+  lineItems: LineItemInput[]
 }

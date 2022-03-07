@@ -26,7 +26,7 @@ async function updateAllCategories(): Promise<InstanceResponse>  {
     }
   `
 
-  const _categories = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'productCategories');
+  const _categories = await queryAll(gql, 200, 'productCategories');
 
   const dereference = id => {
     return _categories

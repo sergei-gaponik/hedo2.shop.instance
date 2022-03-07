@@ -2,7 +2,6 @@ import { context } from '../core/context'
 import { InstanceRequestError, InstanceResponse } from '../types';
 import { isValidStringArray } from '@sergei-gaponik/hedo2.lib.util'
 
-
 async function getFilters(args): Promise<InstanceResponse> {
 
   let response: InstanceResponse = {}

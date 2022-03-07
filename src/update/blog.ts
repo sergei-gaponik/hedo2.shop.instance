@@ -20,7 +20,7 @@ async function updateAllArticles(): Promise<InstanceResponse>  {
     }
   `
 
-  const articles = await queryAll(process.env.SYSTEM_API_ENDPOINT, gql, 200, 'articles');
+  const articles = await queryAll(gql, 200, 'articles');
 
   await context().mongoDB.collection('articles').deleteMany({})
   const { insertedCount } = await context().mongoDB.collection('articles').insertMany(articles)

@@ -1,8 +1,8 @@
-import * as urql from "@urql/core"
 import { Db } from "mongodb"
 
 export interface Context {
   mongoDB?: Db,
+  paypalClient?: any
 }
 
 let _context = {}
