@@ -1,10 +1,14 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { InstanceRequest, InstanceRequestError, InstanceResponse } from '../types'
 import systemRoutes from './systemRoutes'
-
+import { magenta } from 'colors/safe'
+import { performance } from 'perf_hooks'
+import { crc } from '@sergei-gaponik/hedo2.lib.util'
 
 export default async function systemHandler(req: FastifyRequest, reply: FastifyReply) {
   
+  const startTime = performance.now()
+
   const _r = await (async (): Promise<InstanceResponse> => {
     
     if(!req.headers["content-type"]?.includes("application/json"))
@@ -30,6 +34,20 @@ export default async function systemHandler(req: FastifyRequest, reply: FastifyR
     }
 
   })()
+
+  const execTime = Math.round((performance.now() - startTime) * 100) / 100
+
+  let _log: any = { 
+    path: (req.body as any).path || null,
+    execTime,
+    crc: crc(JSON.stringify(req.body)),
+  }
+
+  if(_r.errors)
+    _log.errors = _r.errors
+  
+
+  console.log(magenta("system"), _log)
 
 
   reply.code(200)

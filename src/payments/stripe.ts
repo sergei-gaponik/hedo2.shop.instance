@@ -13,7 +13,7 @@ export async function initStripePaymentSession(args: InitCheckoutSessionArgs): P
 
   const session = await stripe.checkout.sessions.create({
     customer_email: args.contactInfo.email,
-    client_reference_id: args.contactInfo.username || null,
+    client_reference_id: args.contactInfo.username || undefined,
     line_items: [
       {
         name: "Zwischensumme",

@@ -3,7 +3,7 @@ import { InstanceResponse } from '../types'
 import { queryAll } from '@sergei-gaponik/hedo2.lib.util'
 
 
-async function updateAllProducts(): Promise<InstanceResponse>  {
+export async function updateAllProducts(): Promise<InstanceResponse>  {
 
   const gql = `
     query GetProductsForInstanceAPI($limit: Float!, $page: Float!) {
@@ -31,7 +31,9 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
           value
         }
         images {
-          src
+          asset {
+            src
+          }
         }
       }
     }
@@ -51,51 +53,4 @@ async function updateAllProducts(): Promise<InstanceResponse>  {
     }
   }
 
-}
-
-async function updateAllVariants(): Promise<InstanceResponse>  {
-
-  const gql = `
-    query GetVariants($limit: Float!, $page: Float!) {
-      variants (dereference: true, limit: $limit, page: $page) {
-        _id
-        title
-        overwriteTitle
-        measurementUnit
-        measurementQuantity
-        measurementReferenceValue
-        price
-        specialTaxRate
-        availableQuantity
-        maxQuantity
-        images {
-          src
-        }
-        products {
-          _id
-        }
-      }
-    }
-  `
-
-  const variants = await queryAll(gql, 200, 'variants');
-
-  await context().mongoDB.collection('variants').deleteMany({})
-  const { insertedCount } = await context().mongoDB.collection('variants').insertMany(variants)
-
-  if(insertedCount != variants.length)
-    throw new Error();
-  
-  return {
-    data: {
-      insertedCount
-    }
-  }
-
-}
-
-
-export {
-  updateAllProducts,
-  updateAllVariants
 }

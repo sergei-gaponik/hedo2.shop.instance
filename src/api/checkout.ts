@@ -71,6 +71,7 @@ export async function initCheckoutSession(args: InitCheckoutSessionArgs): Promis
 
   const paymentProvider = paymentProviderFromPaymentMethod(args.paymentInfo.paymentMethod)
   
+  
   const paymentSession = await initPaymentSession(paymentProvider, args)
 
   const subTotal = getSubTotal(args.lineItems)

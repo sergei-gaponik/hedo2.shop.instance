@@ -6,11 +6,14 @@ import * as _categories from '../api/categories'
 import * as _blog from '../api/blog'
 import * as _variants from '../api/variants'
 import * as _userAddress from '../api/userAddress'
+import * as _userOrders from '../api/userOrders'
 import * as _shippingMethods from '../api/shippingMethods'
 import * as _checkout from '../api/checkout'
+import * as _series from '../api/series'
 
 const routes = {
   ..._products,
+  ..._series,
   ..._filters,
   ..._brands,
   ..._cart,
@@ -18,6 +21,7 @@ const routes = {
   ..._blog,
   ..._variants,
   ..._userAddress,
+  ..._userOrders,
   ..._shippingMethods,
   ..._checkout
 }

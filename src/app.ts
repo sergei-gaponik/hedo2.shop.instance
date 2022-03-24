@@ -12,9 +12,12 @@ import systemHandler from './core/systemHandler'
 import { VERSION, PRODUCTION } from './core/const'
 import { setContext } from './core/context'
 import * as paypal from "@paypal/checkout-server-sdk"
+import { initConsole } from '@sergei-gaponik/hedo2.lib.util'
+
 
 async function main() {
 
+  initConsole(console)
 
   console.log(`${bold('INSTANCE API')} v${VERSION}\n`);
   console.log(`env: ${PRODUCTION ? bold(cyan("PRODUCTION")) : bold(yellow("DEVELOPMENT"))}`);
@@ -63,7 +66,7 @@ async function main() {
   app.post('/system', (req, res) => systemHandler(req, res));
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\napp running on ${cyan(`https://${HOST}:${PORT}`)}`);
+    console.log(`app running on ${cyan(`https://${HOST}:${PORT}`)}`);
     console.log(`api endpoint ${cyan(`https://${HOST}:${PORT}/api`)}`);
     console.log(`system endpoint ${cyan(`https://${HOST}:${PORT}/system`)}\n`);
   })

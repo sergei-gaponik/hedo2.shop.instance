@@ -2,7 +2,7 @@ import { context } from '../core/context'
 import { InstanceResponse } from '../types'
 import { queryAll } from '@sergei-gaponik/hedo2.lib.util'
 
-async function updateAllArticles(): Promise<InstanceResponse>  {
+export async function updateAllArticles(): Promise<InstanceResponse>  {
 
   const gql = `
     query GetArticles($limit: Float!, $page: Float!) {
@@ -11,6 +11,8 @@ async function updateAllArticles(): Promise<InstanceResponse>  {
         name
         handle
         body
+        author
+        published
         image {
           src
           type
@@ -33,9 +35,4 @@ async function updateAllArticles(): Promise<InstanceResponse>  {
       insertedCount
     }
   }
-}
-
-export {
-  updateAllArticles,
-  
 }
