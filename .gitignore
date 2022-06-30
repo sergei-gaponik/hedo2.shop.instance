@@ -1,5 +1,5 @@
 node_modules
 .ssl
-.env
+*.env
 dist
 cognito.pub.pem

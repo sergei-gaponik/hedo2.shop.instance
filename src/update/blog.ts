@@ -22,12 +22,21 @@ export async function updateAllArticles(): Promise<InstanceResponse>  {
     }
   `
 
-  const articles = await queryAll(gql, 200, 'articles');
+  const items = await queryAll(gql, 200, 'articles');
 
   await context().mongoDB.collection('articles').deleteMany({})
-  const { insertedCount } = await context().mongoDB.collection('articles').insertMany(articles)
 
-  if(insertedCount != articles.length)
+  if(!items.length){
+    return {
+      data: {
+        insertedCount: 0
+      }
+    }
+  }
+  
+  const { insertedCount } = await context().mongoDB.collection('articles').insertMany(items)
+
+  if(insertedCount != items.length)
     throw new Error();
   
   return {

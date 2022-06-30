@@ -10,8 +10,11 @@ import * as _userOrders from '../api/userOrders'
 import * as _shippingMethods from '../api/shippingMethods'
 import * as _checkout from '../api/checkout'
 import * as _series from '../api/series'
+import * as _customPages from '../api/customPages'
+import * as _frontPageSections from '../api/frontPageSections'
+import * as _banners from '../api/banners'
 
-const routes = {
+const routes: any = {
   ..._products,
   ..._series,
   ..._filters,
@@ -23,7 +26,10 @@ const routes = {
   ..._userAddress,
   ..._userOrders,
   ..._shippingMethods,
-  ..._checkout
+  ..._checkout,
+  ..._customPages,
+  ..._frontPageSections,
+  ..._banners
 }
 
 export default routes

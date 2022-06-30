@@ -4,7 +4,7 @@ import { isValidStringArray, isValidProjection , gqlHandler} from '@sergei-gapon
 import validateToken from '../util/validateToken'
 import { createUser } from '../util/user'
 import { Address } from '@sergei-gaponik/hedo2.lib.models'
-
+import Joi = require('joi');
 
 const _getUserAddresses = async (user): Promise<InstanceResponse> => {
 
@@ -83,6 +83,19 @@ export async function getUserAddresses(args): Promise<InstanceResponse> {
 
 export async function createUserAddress(args): Promise<InstanceResponse>{
 
+  const schema = Joi.object({
+    idToken: Joi.string().required(),
+    address: Joi.object()
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
+
   const user = await validateToken(args?.idToken)
 
   if(!user)
@@ -109,6 +122,19 @@ export async function createUserAddress(args): Promise<InstanceResponse>{
 }
 
 export async function updateUserAddress(args): Promise<InstanceResponse>{
+
+  const schema = Joi.object({
+    idToken: Joi.string().required(),
+    address: Joi.object()
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
 
   const user = await validateToken(args?.idToken)
 
@@ -137,6 +163,19 @@ export async function updateUserAddress(args): Promise<InstanceResponse>{
 }
 
 export async function deleteUserAddress(args): Promise<InstanceResponse>{
+
+  const schema = Joi.object({
+    idToken: Joi.string().required(),
+    hash: Joi.string().required()
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
 
   const user = await validateToken(args?.idToken)
 

@@ -1,23 +1,27 @@
 import { context } from '../core/context'
 import { InstanceRequestError, InstanceResponse } from '../types';
 import { isValidStringArray } from '@sergei-gaponik/hedo2.lib.util'
+import Joi = require('joi');
 
 async function getFilters(args): Promise<InstanceResponse> {
+
+  const schema = Joi.object({
+    properties: Joi.array().items(Joi.string()),
+    appliedFilters: Joi.array().items(Joi.array().items(Joi.string()))
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
 
   let response: InstanceResponse = {}
 
   const _properties = args.properties
   const _appliedFilters = args.appliedFilters
-
-  if(!_properties || !_appliedFilters){
-    response.errors = [ InstanceRequestError.missingArgs ]
-    return response;
-  }
-
-  if(!isValidStringArray(_properties) || !_appliedFilters.every(a => isValidStringArray(a))){
-    response.errors = [ InstanceRequestError.badRequest ]
-    return;
-  }
 
   const filters = await context().mongoDB.collection("filters").find({ handle: { $in: _properties }}).toArray()
 
@@ -27,6 +31,7 @@ async function getFilters(args): Promise<InstanceResponse> {
     const input = {
       handle: filter.handle,
       title: filter.title || filter.name,
+      categoryId: filter.category._id,
       _id: filter._id
     }
   

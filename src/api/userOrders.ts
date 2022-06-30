@@ -4,6 +4,7 @@ import { isValidStringArray, isValidProjection , gqlHandler} from '@sergei-gapon
 import validateToken from '../util/validateToken'
 import { createUser } from '../util/user'
 import { Order } from '@sergei-gaponik/hedo2.lib.models'
+import Joi = require('joi');
 
 const _getUserOrders = async (user): Promise<InstanceResponse> => {
 
@@ -11,11 +12,15 @@ const _getUserOrders = async (user): Promise<InstanceResponse> => {
     query GetUserOrders($username: String!){
       orders(filter: { username: $username }, dereference: true){
         _id
+        _created
         status
         username
         uuid
+        shippingCost
+        subTotal
         lineItems{
           variant{
+            _id
             title
             images{
               asset{
@@ -24,9 +29,9 @@ const _getUserOrders = async (user): Promise<InstanceResponse> => {
             }
             measurementUnit
             measurementQuantity
-            measurementReferenceValue
           }
           product{
+            _id
             name
             handle
             series{
@@ -54,7 +59,7 @@ const _getUserOrders = async (user): Promise<InstanceResponse> => {
           title
           deliveryInstruction
         }
-        shippingAddress{
+        billingAddress{
           firstName
           lastName
           city
@@ -66,6 +71,7 @@ const _getUserOrders = async (user): Promise<InstanceResponse> => {
           title
           deliveryInstruction
         }
+        billingAddressMatchesShippingAddress
         shippingMethod {
           name
           serviceProvider

@@ -6,19 +6,20 @@
   "scripts": {
     "watch": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/app.ts\"",
     "start": "ts-node src/app.ts",
-    "inspect": "node --inspect -r ts-node/register src/app.ts"
+    "inspect": "node --inspect -r ts-node/register src/app.ts",
+    "docker:build": "docker build . -t hedo2.shop.instance && docker tag hedo2.shop.instance:latest 493725010520.dkr.ecr.eu-central-1.amazonaws.com/hedo2.shop.instance:latest",
+    "docker:run": "docker run -d -p $p:$p --env-file .docker.env hedo2.shop.instance",
+    "docker:push": "docker push 493725010520.dkr.ecr.eu-central-1.amazonaws.com/hedo2.shop.instance:latest"
   },
   "author": "HEDO Beauty",
   "license": "UNLICENSED",
-  "_moduleAliases": {
-    "@sergei-gaponik/hedo2.lib.models": "../../_lib/models/dist/app.js",
-    "@sergei-gaponik/hedo2.lib.util": "../../_lib/util/dist/app.js"
-  },
   "devDependencies": {
     "@types/node": "^15.12.2",
     "module-alias": "^2.2.2"
   },
   "dependencies": {
+    "@sergei-gaponik/hedo2.lib.models": "git+https://sergei-gaponik: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@github.com/sergei-gaponik/hedo2.lib.models",
+    "@sergei-gaponik/hedo2.lib.util": "git+https://sergei-gaponik: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@github.com/sergei-gaponik/hedo2.lib.util",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@types/jsonwebtoken": "^8.5.5",
     "@types/mongodb": "^3.6.18",
@@ -27,8 +28,10 @@
     "dotenv": "^10.0.0",
     "fastify": "^3.17.0",
     "fastify-compress": "^3.6.0",
+    "fastify-cookie": "^5.6.0",
     "fastify-cors": "^6.0.1",
     "isomorphic-fetch": "^3.0.0",
+    "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.8",
     "node-fetch": "^2.6.1",

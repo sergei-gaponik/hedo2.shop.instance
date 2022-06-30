@@ -16,6 +16,7 @@ export interface InstanceRequest {
   path?: string
   args?: any
   idToken?: string
+  sid?: string
   bulk?: InstanceRequest[]
   chronological?: boolean
 }
@@ -24,6 +25,7 @@ export interface InstanceResponse {
   errors?: InstanceRequestError[]
   data?: any
   bulk?: InstanceResponse[]
+  sid?: string
 }
 
 export interface UserToken {

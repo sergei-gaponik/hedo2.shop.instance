@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { InstanceRequest, InstanceRequestError, InstanceResponse } from '../types'
 import routes from './routes'
 import { performance } from 'perf_hooks'
-import { crc } from '@sergei-gaponik/hedo2.lib.util'
+import { crc, sessionHandler  } from '@sergei-gaponik/hedo2.lib.util'
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -24,15 +24,18 @@ const _handler = async (body: InstanceRequest): Promise<InstanceResponse> => {
 
 export default async function handler(req: FastifyRequest, reply: FastifyReply) {
 
-  const startTime = performance.now()
+  await sleep(300);
 
-  const _r = await (async (): Promise<InstanceResponse> => {
+  const startTime = performance.now()
+  const body: InstanceRequest = req.body;
+  const sid = sessionHandler(body, process.env.SESSION_SECRET)
+
+  let _r = await (async (): Promise<InstanceResponse> => {
+
     
     if(!req.headers["content-type"]?.includes("application/json"))
       return { errors: [ InstanceRequestError.wrongContentType ] };
     
-    const body: InstanceRequest = req.body;
-
     if(body.bulk){
 
       let r = []
@@ -60,14 +63,19 @@ export default async function handler(req: FastifyRequest, reply: FastifyReply) 
   let _log: any = { 
     path: (req.body as any).path || (req.body as any).bulk?.map(a => a.path) || null,
     execTime,
+    sid: sid.value,
     crc: crc(JSON.stringify(req.body)),
   }
 
   if(_r.errors)
     _log.errors = _r.errors
   
-
   console.log(_log)
+
+  if(sid.encrypted){
+    _r.sid = sid.encrypted;
+    (reply as any).setCookie("sid", sid)
+  }
 
   reply.code(200)
     .header('Content-Type', 'application/json; charset=utf-8')

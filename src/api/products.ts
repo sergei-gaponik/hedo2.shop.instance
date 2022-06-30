@@ -1,14 +1,27 @@
 import { context } from '../core/context'
 import { InstanceRequestError, InstanceResponse } from '../types';
 import { isValidStringArray, isValidProjection } from '@sergei-gaponik/hedo2.lib.util'
+import Joi = require('joi');
+import { ARRAY_MAX, LIMIT_MAX } from '../core/const';
 
 export async function findProducts(args): Promise<InstanceResponse> {
 
+  const schema = Joi.object({
+    ids: Joi.array().items(Joi.string()).max(ARRAY_MAX),
+    limit: Joi.number().integer().min(1).max(LIMIT_MAX),
+    page: Joi.number().integer().min(1),
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
+
   const ids = args.ids
   const { limit = 24, page = 1 } = args
-
-  if (!isValidStringArray(ids) || isNaN(page) || isNaN(limit))
-    return { errors: [ InstanceRequestError.badRequest ] }
 
   if(!ids.length)
     return { data: { products: [] }}
@@ -39,7 +52,7 @@ export async function findOneProduct(args): Promise<InstanceResponse> {
 
   const query = args.query
 
-  if (!query || typeof(query) != "string")
+  if(!query || typeof(query) != "string")
     return { errors: [ InstanceRequestError.badRequest ] }
 
   let product = await context().mongoDB.collection('products').findOne({

@@ -7,6 +7,8 @@ import { initStripePaymentSession, completeStripePaymentSession } from '../payme
 import { initKlarnaPaymentSession, completeKlarnaPaymentSession } from '../payments/klarna'
 import { completePaypalPaymentSession, initPaypalPaymentSession } from '../payments/paypal'
 import { paymentProviderFromPaymentMethod, getShippingCost, getSubTotal, getTotalVat } from '../util/checkout'
+import Joi = require('joi')
+import { ARRAY_MAX } from '../core/const'
 
 const INIT_LOCK_DURATION = 30 * 1000
 const COMPLETE_LOCK_DURATION = 600 * 1000
@@ -52,12 +54,47 @@ export async function initCheckoutSession(args: InitCheckoutSessionArgs): Promis
   
   setTimeout(() => delete lock[hash], INIT_LOCK_DURATION)
 
+  const schema = Joi.object({
+    uuid: Joi.string(),
+    lineItems: Joi.array().items(Joi.object({
+      variant: Joi.string().required(),
+      product: Joi.string(),
+      quantity: Joi.number().integer().required().min(1),
+      price: Joi.number().required().min(0),
+      token: Joi.string().required(),
+      specialTaxRate: Joi.number(),
+      maxQuantity: Joi.number(),
+      isGift: Joi.bool().allow(null)
+    })).min(1).max(ARRAY_MAX),
+    paymentInfo: Joi.object({
+      paymentMethod: Joi.string().required()
+    }),
+    contactInfo: Joi.object({
+      privacyPolicyAccepted: Joi.bool(),
+      email: Joi.string().email().required(),
+      isAuthenticated: Joi.bool(),
+      username: Joi.string().allow("")
+    }),
+    shippingInfo: Joi.object({
+      shippingAddress: Joi.object(),
+      billingAddress: Joi.object().allow(null),
+      shippingMethod: Joi.object({
+        _id: Joi.string().required()
+      }).unknown(true),
+      billingAddressMatchesShippingAddress: Joi.bool()
+    })
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
+
   const lineItems: LineItemInput[] = args.lineItems
   const shippingMethodId = args.shippingInfo?.shippingMethod?._id
-  const email = args.contactInfo?.email
-
-  if(!lineItems || !lineItems.length || !shippingMethodId || !email)
-    return { errors: [ InstanceRequestError.badRequest ]}
 
   const valid = await validateLineItems(lineItems)
 
@@ -71,12 +108,17 @@ export async function initCheckoutSession(args: InitCheckoutSessionArgs): Promis
 
   const paymentProvider = paymentProviderFromPaymentMethod(args.paymentInfo.paymentMethod)
   
+  if(!paymentProvider)
+    return { errors: [ InstanceRequestError.badRequest ]}
   
   const paymentSession = await initPaymentSession(paymentProvider, args)
 
-  const subTotal = getSubTotal(args.lineItems)
-  const shippingCost = getShippingCost(args.shippingInfo.shippingMethod, args.lineItems)
-  const vat = await getTotalVat(args.lineItems)
+  if(!paymentSession)
+    return { errors: [ InstanceRequestError.badRequest ]}
+
+  const subTotal = getSubTotal(lineItems)
+  const shippingCost = getShippingCost(shippingMethod, lineItems)
+  const vat = await getTotalVat(lineItems)
 
   const input: OrderInput = {
     status: OrderStatus.open,
@@ -138,8 +180,23 @@ export async function completeCheckoutSession(args: CompleteCheckoutSessionArgs)
   
   if(lock[hash])
     return lock[hash]
-  
+
   setTimeout(() => delete lock[hash], COMPLETE_LOCK_DURATION)
+
+  const schema = Joi.object({
+    paymentProvider: Joi.string().required(),
+    uuid: Joi.string(),
+    sessionId: Joi.string(),
+    hppSession: Joi.string(),
+  })
+
+  try{
+    await schema.validateAsync(args)
+  }
+  catch(e){
+    console.log(e)
+    return { errors: [ InstanceRequestError.badRequest ] }
+  }
 
   const ok = await completePaymentSession(args)
 

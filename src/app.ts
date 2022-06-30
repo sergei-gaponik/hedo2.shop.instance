@@ -1,6 +1,11 @@
-require("module-alias/register")
 require("reflect-metadata")
-require("dotenv").config()
+
+import { PRODUCTION, VERSION } from './core/const'
+
+if(!PRODUCTION){
+  require("dotenv").config()
+  // require("module-alias/register")
+}
 
 import { bold, cyan, yellow } from 'colors/safe'
 import * as fs from 'fs'
@@ -9,7 +14,6 @@ import { MongoClient } from 'mongodb'
 import Fastify from 'fastify'
 import handler from './core/handler'
 import systemHandler from './core/systemHandler'
-import { VERSION, PRODUCTION } from './core/const'
 import { setContext } from './core/context'
 import * as paypal from "@paypal/checkout-server-sdk"
 import { initConsole } from '@sergei-gaponik/hedo2.lib.util'
@@ -61,6 +65,7 @@ async function main() {
 
   app.register(require('fastify-cors'), { origin: "*" })
   app.register(require('fastify-compress'))
+  app.register(require('fastify-cookie'), { secret: process.env.COOKIE_SIGNATURE })
 
   app.post('/api', (req, res) => handler(req, res));
   app.post('/system', (req, res) => systemHandler(req, res));
