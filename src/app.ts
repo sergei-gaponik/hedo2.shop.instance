@@ -56,12 +56,14 @@ async function main() {
 
   console.log('initializing server...');
 
-  const app = Fastify({
-    https: {
-      key: fs.readFileSync(path.join(__dirname, '../.ssl/key.pem')),
-      cert: fs.readFileSync(path.join(__dirname, '../.ssl/cert.pem'))
-    }
-  })
+  // const app = Fastify({
+  //   https: {
+  //     key: fs.readFileSync(path.join(__dirname, '../.ssl/key.pem')),
+  //     cert: fs.readFileSync(path.join(__dirname, '../.ssl/cert.pem'))
+  //   }
+  // })
+
+  const app = Fastify()
 
   app.register(require('fastify-cors'), { origin: "*" })
   app.register(require('fastify-compress'))
@@ -71,9 +73,9 @@ async function main() {
   app.post('/system', (req, res) => systemHandler(req, res));
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`app running on ${cyan(`https://${HOST}:${PORT}`)}`);
-    console.log(`api endpoint ${cyan(`https://${HOST}:${PORT}/api`)}`);
-    console.log(`system endpoint ${cyan(`https://${HOST}:${PORT}/system`)}\n`);
+    console.log(`app running on ${cyan(`http://${HOST}:${PORT}`)}`);
+    console.log(`api endpoint ${cyan(`http://${HOST}:${PORT}/api`)}`);
+    console.log(`system endpoint ${cyan(`http://${HOST}:${PORT}/system`)}\n`);
   })
 
 }

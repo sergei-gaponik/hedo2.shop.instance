@@ -1,15 +1,15 @@
 {
   "name": "hedo2.shop.instance",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "",
   "main": "src/app.ts",
   "scripts": {
     "watch": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/app.ts\"",
     "start": "ts-node src/app.ts",
     "inspect": "node --inspect -r ts-node/register src/app.ts",
-    "docker:build": "docker build . -t hedo2.shop.instance && docker tag hedo2.shop.instance:latest 493725010520.dkr.ecr.eu-central-1.amazonaws.com/hedo2.shop.instance:latest",
-    "docker:run": "docker run -d -p $p:$p --env-file .docker.env hedo2.shop.instance",
-    "docker:push": "docker push 493725010520.dkr.ecr.eu-central-1.amazonaws.com/hedo2.shop.instance:latest"
+    "docker:build": "docker buildx build . --platform=linux/amd64 -t hedo2.shop.instance:latest",
+    "docker:run": "docker run -d -p $p:$p --env-file .docker.env hedo2.shop.instance:latest",
+    "docker:push": "docker tag hedo2.shop.instance:latest 493725010520.dkr.ecr.eu-central-1.amazonaws.com/hedo2.shop.instance:latest && docker push 493725010520.dkr.ecr.eu-central-1.amazonaws.com/hedo2.shop.instance:latest"
   },
   "author": "HEDO Beauty",
   "license": "UNLICENSED",
