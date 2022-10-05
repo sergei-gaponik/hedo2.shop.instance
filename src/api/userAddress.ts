@@ -1,13 +1,16 @@
-import { context } from '../core/context'
-import { InstanceRequestError, InstanceResponse } from '../types';
-import { isValidStringArray, isValidProjection , gqlHandler} from '@sergei-gaponik/hedo2.lib.util'
-import validateToken from '../util/validateToken'
-import { createUser } from '../util/user'
-import { Address } from '@sergei-gaponik/hedo2.lib.models'
-import Joi = require('joi');
+import { context } from "../core/context";
+import { InstanceRequestError, InstanceResponse } from "../types";
+import {
+  isValidStringArray,
+  isValidProjection,
+  gqlHandler,
+} from "@sergei-gaponik/hedo2.lib.util";
+import validateToken from "../util/validateToken";
+import { createUser } from "../util/user";
+import { Address } from "@sergei-gaponik/hedo2.lib.models";
+import Joi = require("joi");
 
 const _getUserAddresses = async (user): Promise<InstanceResponse> => {
-
   const getUserAddresses = `
     query GetUserAddresses($username: String!){
       user(filter: { username: $username }){
@@ -29,167 +32,154 @@ const _getUserAddresses = async (user): Promise<InstanceResponse> => {
         }
       }
     }
-  `
+  `;
 
   const r = await gqlHandler({
     query: getUserAddresses,
-    variables: { username: user.sub }
-  })
+    variables: { username: user.sub },
+  });
 
-  if(r.errors)
-    return { errors: [ InstanceRequestError.internalServerError ]}
+  if (r.errors) return { errors: [InstanceRequestError.internalServerError] };
 
-  if(r.data.user){
-    return { data: { addresses: r.data.user.addresses }}
+  if (r.data.user) {
+    return { data: { addresses: r.data.user.addresses } };
+  } else {
+    await createUser(user);
+    return { data: { addresses: [] } };
   }
-  else{
-    await createUser(user)
-    return { data: { addresses: [] }}
-  }
-}
+};
 
-const _updateUserAddresses = async (username, addresses): Promise<InstanceResponse> => {
-
+const _updateUserAddresses = async (
+  username,
+  addresses
+): Promise<InstanceResponse> => {
   const updateUserAddresses = `
       mutation UpdateUserAddresses($username: String!, $addresses: [AddressInput!]!){
         updateOneUser(filter: { username: $username }, input: { addresses: $addresses }){
           errors
         }
       }
-    `
-  
+    `;
+
   const r2 = await gqlHandler({
     query: updateUserAddresses,
-    variables: { username, addresses }
-  })
+    variables: { username, addresses },
+  });
 
-  if(r2.errors?.length || r2.data.updateOneUser.errors?.length)
-    return { errors: [ InstanceRequestError.internalServerError ]}
+  if (r2.errors?.length || r2.data.updateOneUser.errors?.length)
+    return { errors: [InstanceRequestError.internalServerError] };
 
-  return {}
-}
-
-
+  return {};
+};
 
 export async function getUserAddresses(args): Promise<InstanceResponse> {
+  const user = await validateToken(args?.idToken);
 
-  const user = await validateToken(args?.idToken)
+  if (!user) return { errors: [InstanceRequestError.permissionDenied] };
 
-  if(!user)
-    return { errors: [ InstanceRequestError.permissionDenied ]}
-
-  return await _getUserAddresses(user)
+  return await _getUserAddresses(user);
 }
 
-export async function createUserAddress(args): Promise<InstanceResponse>{
-
+export async function createUserAddress(args): Promise<InstanceResponse> {
   const schema = Joi.object({
     idToken: Joi.string().required(),
-    address: Joi.object()
-  })
+    address: Joi.object(),
+  });
 
-  try{
-    await schema.validateAsync(args)
-  }
-  catch(e){
-    console.log(e)
-    return { errors: [ InstanceRequestError.badRequest ] }
-  }
-
-  const user = await validateToken(args?.idToken)
-
-  if(!user)
-    return { errors: [ InstanceRequestError.permissionDenied ]}
-
-  const r = await _getUserAddresses(user)
-
-  if(r.errors?.length) return r;
-
-  let addresses: Address[] = r.data.addresses || []
-
-  const address: Address = args.address
-
-  if(address.defaultBillingAddress){
-    addresses.forEach(a => a.defaultBillingAddress = false)
-  }
-  if(address.defaultShippingAddress){
-    addresses.forEach(a => a.defaultShippingAddress = false)
+  try {
+    await schema.validateAsync(args);
+  } catch (e) {
+    console.log(e);
+    return { errors: [InstanceRequestError.badRequest] };
   }
 
-  addresses.push(address)
+  const user = await validateToken(args?.idToken);
 
-  return await _updateUserAddresses(user.sub, addresses)
+  if (!user) return { errors: [InstanceRequestError.permissionDenied] };
+
+  const r = await _getUserAddresses(user);
+
+  if (r.errors?.length) return r;
+
+  let addresses: Address[] = r.data.addresses || [];
+
+  const address: Address = args.address;
+
+  if (address.defaultBillingAddress) {
+    addresses.forEach((a) => (a.defaultBillingAddress = false));
+  }
+  if (address.defaultShippingAddress) {
+    addresses.forEach((a) => (a.defaultShippingAddress = false));
+  }
+
+  addresses.push(address);
+
+  return await _updateUserAddresses(user.sub, addresses);
 }
 
-export async function updateUserAddress(args): Promise<InstanceResponse>{
-
+export async function updateUserAddress(args): Promise<InstanceResponse> {
   const schema = Joi.object({
     idToken: Joi.string().required(),
-    address: Joi.object()
-  })
+    address: Joi.object(),
+  });
 
-  try{
-    await schema.validateAsync(args)
-  }
-  catch(e){
-    console.log(e)
-    return { errors: [ InstanceRequestError.badRequest ] }
-  }
-
-  const user = await validateToken(args?.idToken)
-
-  if(!user)
-    return { errors: [ InstanceRequestError.permissionDenied ]}
-
-  const r = await _getUserAddresses(user)
-
-  if(r.errors?.length) return r;
-
-  let addresses: Address[] = r.data.addresses || []
-
-  const address: Address = args.address
-
-  if(address.defaultBillingAddress){
-    addresses.forEach(a => a.defaultBillingAddress = false)
-  }
-  if(address.defaultShippingAddress){
-    addresses.forEach(a => a.defaultShippingAddress = false)
+  try {
+    await schema.validateAsync(args);
+  } catch (e) {
+    console.log(e);
+    return { errors: [InstanceRequestError.badRequest] };
   }
 
-  addresses = addresses.map(_address => _address.hash == address.hash ? address : _address)
+  const user = await validateToken(args?.idToken);
 
-  return await _updateUserAddresses(user.sub, addresses)
+  if (!user) return { errors: [InstanceRequestError.permissionDenied] };
 
+  const r = await _getUserAddresses(user);
+
+  if (r.errors?.length) return r;
+
+  let addresses: Address[] = r.data.addresses || [];
+
+  const address: Address = args.address;
+
+  if (address.defaultBillingAddress) {
+    addresses.forEach((a) => (a.defaultBillingAddress = false));
+  }
+  if (address.defaultShippingAddress) {
+    addresses.forEach((a) => (a.defaultShippingAddress = false));
+  }
+
+  addresses = addresses.map((_address) =>
+    _address.hash == address.hash ? address : _address
+  );
+
+  return await _updateUserAddresses(user.sub, addresses);
 }
 
-export async function deleteUserAddress(args): Promise<InstanceResponse>{
-
+export async function deleteUserAddress(args): Promise<InstanceResponse> {
   const schema = Joi.object({
     idToken: Joi.string().required(),
-    hash: Joi.string().required()
-  })
+    hash: Joi.string().required(),
+  });
 
-  try{
-    await schema.validateAsync(args)
+  try {
+    await schema.validateAsync(args);
+  } catch (e) {
+    console.log(e);
+    return { errors: [InstanceRequestError.badRequest] };
   }
-  catch(e){
-    console.log(e)
-    return { errors: [ InstanceRequestError.badRequest ] }
-  }
 
-  const user = await validateToken(args?.idToken)
+  const user = await validateToken(args?.idToken);
 
-  if(!user)
-    return { errors: [ InstanceRequestError.permissionDenied ]}
+  if (!user) return { errors: [InstanceRequestError.permissionDenied] };
 
-  const r = await _getUserAddresses(user)
+  const r = await _getUserAddresses(user);
 
-  if(r.errors?.length) return r;
+  if (r.errors?.length) return r;
 
-  let addresses: Address[] = r.data.addresses || []
+  let addresses: Address[] = r.data.addresses || [];
 
-  addresses = addresses.filter(_address => _address.hash != args.hash)
+  addresses = addresses.filter((_address) => _address.hash != args.hash);
 
-  return await _updateUserAddresses(user.sub, addresses)
-
+  return await _updateUserAddresses(user.sub, addresses);
 }

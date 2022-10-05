@@ -5,14 +5,14 @@
     "declaration": true,
     "outDir": "./dist",
     "target": "es2018",
-    "module": "commonjs", 
+    "module": "commonjs",
     "lib": ["ES2019"],
     "paths": {
-      "@sergei-gaponik/hedo2.lib.models": [ "../../_lib/models" ],
-      "@sergei-gaponik/hedo2.lib.util": [ "../../_lib/util" ]
+      "@sergei-gaponik/hedo2.lib.models": ["../../_lib/models"],
+      "@sergei-gaponik/hedo2.lib.util": ["../../_lib/util"]
     },
     "sourceMap": true
   },
-  "include": [ "src/*" ],
-  "exclude": [ "node_modules", "**/*.spec.ts", "build" ]
+  "include": ["src/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "build"]
 }

@@ -1,9 +1,8 @@
-import { context } from '../core/context'
-import { InstanceRequestError, InstanceResponse } from '../types'
-import { queryAll } from '@sergei-gaponik/hedo2.lib.util'
+import { context } from "../core/context";
+import { InstanceRequestError, InstanceResponse } from "../types";
+import { queryAll } from "@sergei-gaponik/hedo2.lib.util";
 
-export async function updateAllVariants(args): Promise<InstanceResponse>  {
-
+export async function updateAllVariants(args): Promise<InstanceResponse> {
   const getVariants = `
     query GetVariants($limit: Float!, $page: Float!) {
       variants (dereference: true, limit: $limit, page: $page) {
@@ -26,25 +25,27 @@ export async function updateAllVariants(args): Promise<InstanceResponse>  {
         }
       }
     }
-  `
+  `;
 
-  const variants = await queryAll(getVariants, 200, 'variants');
+  const variants = await queryAll(getVariants, 200, "variants");
 
-  await context().mongoDB.collection('variants').deleteMany({})
-  const { insertedCount } = await context().mongoDB.collection('variants').insertMany(variants)
+  await context().mongoDB.collection("variants").deleteMany({});
+  const { insertedCount } = await context()
+    .mongoDB.collection("variants")
+    .insertMany(variants);
 
-  if(insertedCount != variants.length)
-    throw new Error();
-  
+  if (insertedCount != variants.length) throw new Error();
+
   return {
     data: {
-      insertedCount
-    }
-  }
+      insertedCount,
+    },
+  };
 }
 
-export async function updateVariantsUpdatedSince(args): Promise<InstanceResponse>  {
-
+export async function updateVariantsUpdatedSince(
+  args
+): Promise<InstanceResponse> {
   const getVariants = `
     query GetVariants($limit: Float!, $page: Float!, $filter: VariantFilter!) {
       variants (dereference: true, limit: $limit, page: $page, filter: $filter) {
@@ -53,49 +54,52 @@ export async function updateVariantsUpdatedSince(args): Promise<InstanceResponse
         availableQuantity
       }
     }
-  `
+  `;
 
-  const updatedSince = args.updatedSince || 0
+  const updatedSince = args.updatedSince || 0;
 
-  if(typeof(updatedSince) != "number"){
-    return { errors: [ InstanceRequestError.badRequest ] }
+  if (typeof updatedSince != "number") {
+    return { errors: [InstanceRequestError.badRequest] };
   }
 
-  const filter = !updatedSince ? {} : {
-    _json: JSON.stringify({
-      _auth: process.env.SYSTEM_API_SECRET,
-      _filter: {
-        _updated: { 
-          $gt: updatedSince 
-        }
-      }
-    })
-  }
+  const filter = !updatedSince
+    ? {}
+    : {
+        _json: JSON.stringify({
+          _auth: process.env.SYSTEM_API_SECRET,
+          _filter: {
+            _updated: {
+              $gt: updatedSince,
+            },
+          },
+        }),
+      };
 
-  const variants = await queryAll(getVariants, 200, 'variants', { filter });
+  const variants = await queryAll(getVariants, 200, "variants", { filter });
 
-  if(!variants.length)
-    return { data: { nModified: 0 }}
+  if (!variants.length) return { data: { nModified: 0 } };
 
-  const r = await context().mongoDB.collection('variants').bulkWrite(variants.map(variant => {
+  const r = await context()
+    .mongoDB.collection("variants")
+    .bulkWrite(
+      variants.map((variant) => {
+        const filter = { _id: variant._id };
 
-    const filter = { _id: variant._id }
+        return {
+          updateOne: {
+            filter,
+            update: { $set: variant },
+            upsert: true,
+          },
+        };
+      })
+    );
 
-    return {
-      updateOne: { 
-        filter, 
-        update: { $set: variant }, 
-        upsert: true
-      }
-    }
-  }))
+  const { nModified } = r.result;
 
-  const { nModified } = r.result
-  
   return {
     data: {
-      nModified
-    }
-  }
+      nModified,
+    },
+  };
 }
-

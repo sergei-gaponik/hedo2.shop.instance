@@ -1,10 +1,8 @@
-import { context } from '../core/context'
-import { InstanceResponse } from '../types'
-import { queryAll } from '@sergei-gaponik/hedo2.lib.util'
+import { context } from "../core/context";
+import { InstanceResponse } from "../types";
+import { queryAll } from "@sergei-gaponik/hedo2.lib.util";
 
-
-export async function updateAllProducts(): Promise<InstanceResponse>  {
-
+export async function updateAllProducts(): Promise<InstanceResponse> {
   const gql = `
     query GetProductsForInstanceAPI($limit: Float!, $page: Float!) {
       products (dereference: true, limit: $limit, page: $page) {
@@ -37,20 +35,20 @@ export async function updateAllProducts(): Promise<InstanceResponse>  {
         }
       }
     }
-  `
+  `;
 
-  const products = await queryAll(gql, 200, 'products');
+  const products = await queryAll(gql, 200, "products");
 
-  await context().mongoDB.collection('products').deleteMany({})
-  const { insertedCount } = await context().mongoDB.collection('products').insertMany(products)
+  await context().mongoDB.collection("products").deleteMany({});
+  const { insertedCount } = await context()
+    .mongoDB.collection("products")
+    .insertMany(products);
 
-  if(insertedCount != products.length)
-    throw new Error();
-  
+  if (insertedCount != products.length) throw new Error();
+
   return {
     data: {
-      insertedCount
-    }
-  }
-
+      insertedCount,
+    },
+  };
 }
